@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Xml.Linq;
 
 namespace CsProjDependencyBuilder
@@ -51,6 +52,9 @@ namespace CsProjDependencyBuilder
                     case "b":
                         BuildGraph(projects);
                         break;
+                    case "check":
+                        Check(projects);
+                        break;
                     default:
                     {
                         string[] parts = cmd.Split(' ');
@@ -61,6 +65,39 @@ namespace CsProjDependencyBuilder
                     }
                         break;
                 }
+            }
+        }
+
+        private static void Check(Project[] projects)
+        {
+            
+            foreach (Project project in projects)
+            {
+                List<LibraryReference> wrongReferences = project.References
+                    .OfType<LibraryReference>()
+                    .Where(libraryReference => libraryReference.HintPath.Contains("Staging"))
+                    .ToList();
+
+                if (wrongReferences.Count > 0)
+                {
+                    Console.WriteLine("Project {0}", project.AssemblyName);
+                    Console.WriteLine("Wrong references:");
+                    Console.WriteLine(string.Join("\n", wrongReferences.Select(reference => reference.HintPath)));
+                }
+
+                wrongReferences = project.References
+                    .OfType<LibraryReference>()
+                    .Where(reference => null !=
+                        projects.FirstOrDefault(p => p.AssemblyName == Path.GetFileNameWithoutExtension(reference.HintPath)))
+                    .ToList();
+
+                if (wrongReferences.Count > 0)
+                {
+                    Console.WriteLine("Project {0}", project.AssemblyName);
+                    Console.WriteLine("Staging could be replaced with project:");
+                    Console.WriteLine(string.Join("\n", wrongReferences.Select(reference => reference.HintPath)));
+                }
+
             }
         }
 
