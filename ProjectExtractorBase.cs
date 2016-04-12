@@ -8,33 +8,35 @@ namespace csdean
 {
     internal abstract class ProjectExtractorBase : IProjectExtractor
     {
-        protected IEnumerable<Project> GetProjects(IEnumerable<FileInfo> fileInfos, string path)
+        protected IEnumerable<Project> GetProjects(IEnumerable<FileInfo> fileInfos, string rootDirPath)
         {
-            var fromPath = new Uri(path);
-            foreach (FileInfo fileInfo in fileInfos)
+            var rootDirUri = new Uri(rootDirPath);
+            return fileInfos.Select(info => CreateProject(info, rootDirUri)).Where(project => project != null);
+        }
+
+        protected static Project CreateProject(FileInfo projectFileInfo, Uri rootDirUri)
+        {
+            using (TextReader textReader = new StreamReader(projectFileInfo.FullName))
             {
-                using (TextReader textReader = new StreamReader(fileInfo.FullName))
+                XDocument doc = XDocument.Load(textReader);
+                if (doc.Root == null)
                 {
-                    XDocument doc = XDocument.Load(textReader);
-                    if (doc.Root == null)
-                    {
-                        continue;
-                    }
-
-                    XNamespace ns = doc.Root.Name.Namespace;
-                    string id = doc.Root.Descendants(ns + "ProjectGuid").First().Value.ToUpperInvariant();
-                    string assemblyName = doc.Root.Descendants(ns + "AssemblyName").First().Value;
-                    var projects = new Project
-                    {
-                        Path = fromPath.MakeRelativeUri(new Uri(fileInfo.FullName)).ToString(),
-                        Id = id,
-                        AssemblyName = assemblyName,
-                        Name = fileInfo.Name,
-                        References = DirectoryExtractor.ParseReferences(doc.Root, ns)
-                    };
-
-                    yield return projects;
+                    return null;
                 }
+
+                XNamespace ns = doc.Root.Name.Namespace;
+                string id = doc.Root.Descendants(ns + "ProjectGuid").First().Value.ToUpperInvariant();
+                string assemblyName = doc.Root.Descendants(ns + "AssemblyName").First().Value;
+                var project = new Project
+                {
+                    Path = rootDirUri.MakeRelativeUri(new Uri(projectFileInfo.FullName)).ToString(),
+                    Id = id,
+                    AssemblyName = assemblyName,
+                    Name = projectFileInfo.Name,
+                    References = DirectoryExtractor.ParseReferences(doc.Root, ns)
+                };
+
+                return project;
             }
         }
 
