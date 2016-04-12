@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace CsProjDependencyBuilder
+namespace csdean
 {
     internal class SolutionExtractor : ProjectExtractorBase
     {

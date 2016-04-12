@@ -7,8 +7,8 @@
     <ProjectGuid>{9AFD016C-5D42-4931-90BD-2BC83DB9110C}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CsProjDependencyBuilder</RootNamespace>
-    <AssemblyName>CsProjDependencyBuilder</AssemblyName>
+    <RootNamespace>csdean</RootNamespace>
+    <AssemblyName>csdean</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

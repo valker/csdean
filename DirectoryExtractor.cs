@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace CsProjDependencyBuilder
+namespace csdean
 {
     internal class DirectoryExtractor : ProjectExtractorBase
     {

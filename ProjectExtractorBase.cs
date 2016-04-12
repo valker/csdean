@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace CsProjDependencyBuilder
+namespace csdean
 {
     internal abstract class ProjectExtractorBase : IProjectExtractor
     {

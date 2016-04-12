@@ -1,4 +1,4 @@
-﻿namespace CsProjDependencyBuilder
+﻿namespace csdean
 {
     public class StandardReference : Reference
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Xml.Linq;
 
-namespace CsProjDependencyBuilder
+namespace csdean
 {
     internal class Program
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace CsProjDependencyBuilder
+namespace csdean
 {
     internal interface IProjectExtractor
     {

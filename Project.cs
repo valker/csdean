@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace CsProjDependencyBuilder
+namespace csdean
 {
     public class Project
     {
