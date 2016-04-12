@@ -12,9 +12,7 @@ namespace CsProjDependencyBuilder
         private static void Main(string[] args)
         {
             string path = args[0];
-            FileInfo[] fileInfos = new DirectoryInfo(path).GetFiles("*.csproj", SearchOption.AllDirectories);
-            Project[] projects = GetProjects(fileInfos, path).ToArray();
-            Dictionary<string, Project> projs = projects.ToDictionary(project => project.Id, project => project);
+            Project[] projects = CollectProjectsInfo(path);
             var wannaExit = false;
             while (!wannaExit)
             {
@@ -66,6 +64,29 @@ namespace CsProjDependencyBuilder
                         break;
                 }
             }
+        }
+
+        private static Project[] CollectProjectsInfo(string path)
+        {
+            IProjectExtractor extractor;
+            if (File.Exists(path))
+            {
+                extractor = new SolutionExtractor();
+            }
+            else if (Directory.Exists(path))
+            {
+                extractor = new DirectoryExtractor();
+            }
+            else
+            {
+                throw new InvalidOperationException("Path should be SLN or directory");
+            }
+
+
+            Project[] projects = extractor.GetProjects(path).ToArray();
+//            FileInfo[] fileInfos = new DirectoryInfo(path).GetFiles("*.csproj", SearchOption.AllDirectories);
+//            projects = GetProjects(fileInfos, path).ToArray();
+            return projects;
         }
 
         private static void Check(Project[] projects)
@@ -257,58 +278,6 @@ namespace CsProjDependencyBuilder
         private static void ShowHelp()
         {
             throw new NotImplementedException();
-        }
-
-        public static IEnumerable<Project> GetProjects(FileInfo[] fileInfos, string path)
-        {
-            var fromPath = new Uri(path);
-            foreach (FileInfo fileInfo in fileInfos)
-            {
-                using (TextReader textReader = new StreamReader(fileInfo.FullName))
-                {
-                    XDocument doc = XDocument.Load(textReader);
-                    XNamespace ns = doc.Root.Name.Namespace;
-                    string id = doc.Root.Descendants(ns + "ProjectGuid").First().Value.ToUpperInvariant();
-                    string assemblyName = doc.Root.Descendants(ns + "AssemblyName").First().Value;
-                    var projects = new Project
-                    {
-                        Path = fromPath.MakeRelativeUri(new Uri(fileInfo.FullName)).ToString(),
-                        Id = id,
-                        AssemblyName = assemblyName,
-                        Name = fileInfo.Name,
-                        References = ParseReferences(doc.Root, ns)
-                    };
-                    yield return projects;
-                }
-            }
-        }
-
-        private static Reference[] ParseReferences(XElement root, XNamespace ns)
-        {
-            var references = new List<Reference>();
-            foreach (XElement reference in root.Descendants(ns + "Reference"))
-            {
-                XAttribute includeAttribute = reference.Attribute("Include");
-                if (reference.Descendants(ns + "HintPath").Any())
-                {
-                    // library
-                    references.Add(new LibraryReference(includeAttribute.Value,
-                        reference.Element(ns + "HintPath").Value));
-                }
-                else
-                {
-                    references.Add(new StandardReference(includeAttribute.Value));
-                }
-            }
-
-            foreach (XElement reference in root.Descendants(ns + "ProjectReference"))
-            {
-                references.Add(new ProjectReference(reference.Attribute("Include").Value,
-                    reference.Element(ns + "Project").Value.ToUpperInvariant(), reference.Element(ns + "Name").Value));
-            }
-
-
-            return references.ToArray();
         }
     }
 }
