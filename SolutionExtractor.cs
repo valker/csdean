@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -9,12 +8,12 @@ namespace csdean
     {
         private static readonly char[] Separators = {' ', '"'};
 
-        public override IEnumerable<Project> GetProjects(string path)
+        public override IEnumerable<string> GetProjects(string path)
         {
             string directoryName = Path.GetDirectoryName(path);
-            if (directoryName == null) return Enumerable.Empty<Project>();
-            var rootDirectoryUri = new Uri(directoryName);
-            return GetProjectPaths(path).Select(projectPath => CreateProject(new FileInfo(projectPath), rootDirectoryUri));
+            return directoryName == null 
+                ? Enumerable.Empty<string>() 
+                : GetProjectPaths(path);
         }
 
         private static IEnumerable<string> GetProjectPaths(string path)

@@ -4,6 +4,6 @@ namespace csdean
 {
     internal interface IProjectExtractor
     {
-        IEnumerable<Project> GetProjects(string path);
+        IEnumerable<string> GetProjects(string path);
     }
 }

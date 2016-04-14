@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Xml.Linq;
 
 namespace csdean
@@ -42,11 +41,6 @@ namespace csdean
                         Console.WriteLine(string.Join("\n",
                             projects.OrderBy(project => project.References.Length).Select(project => project.ToString())));
                         break;
-                    case "listbydepcount":
-                        Console.WriteLine(string.Join("\n",
-                            projects.OrderBy(project => GetDependencies(project, projects).Count())
-                                .Select(project => project.ToString())));
-                        break;
                     case "b":
                         BuildGraph(projects);
                         break;
@@ -83,10 +77,58 @@ namespace csdean
             }
 
 
-            Project[] projects = extractor.GetProjects(path).ToArray();
-//            FileInfo[] fileInfos = new DirectoryInfo(path).GetFiles("*.csproj", SearchOption.AllDirectories);
-//            projects = GetProjects(fileInfos, path).ToArray();
-            return projects;
+            var projects = extractor.GetProjects(path).ToArray();
+            Project[] projectsInfo = projects.Select(s => CreateProject(s)).ToArray();
+
+            return projectsInfo;
+        }
+
+        private static Project CreateProject(string projectPath)
+        {
+            using (TextReader reader = new StreamReader(projectPath))
+            {
+                XDocument doc = XDocument.Load(reader, LoadOptions.None);
+
+                if (doc.Root == null) return null;
+                XNamespace ns = doc.Root.Name.Namespace;
+                string id = doc.Root.Descendants(ns + "ProjectGuid").First().Value.ToUpperInvariant();
+                string assemblyName = doc.Root.Descendants(ns + "AssemblyName").First().Value;
+                var project = new Project
+                {
+                    Path = projectPath,
+                    Id = id,
+                    AssemblyName = assemblyName,
+                    Name = Path.GetFileNameWithoutExtension(projectPath),
+                    References = ParseReferences(doc.Root, ns)
+                };
+
+                return project;
+
+            }
+        }
+
+        private static Reference[] ParseReferences(XContainer root, XNamespace ns)
+        {
+            var references = new List<Reference>();
+            foreach (XElement reference in root.Descendants(ns + "Reference"))
+            {
+                XAttribute includeAttribute = reference.Attribute("Include");
+                if (reference.Descendants(ns + "HintPath").Any())
+                {
+                    // library
+                    XElement xElement = reference.Element(ns + "HintPath");
+                    if (xElement != null)
+                    {
+                        references.Add(new LibraryReference(includeAttribute.Value, xElement.Value));
+                    }
+                }
+                else
+                {
+                    references.Add(new StandardReference(includeAttribute.Value));
+                }
+            }
+
+            return references.ToArray();
         }
 
         private static void Check(Project[] projects)
@@ -265,14 +307,6 @@ namespace csdean
                 );
 
             root.Save("graph.graphml");
-        }
-
-        private static IEnumerable<Project> GetDependencies(Project project, Project[] projects)
-        {
-            return
-                projects.Where(
-                    project1 =>
-                        project1.References.OfType<ProjectReference>().Any(reference => reference.Id == project.Id));
         }
 
         private static void ShowHelp()
