@@ -47,6 +47,9 @@ namespace csdean
                     case "check":
                         Check(projects);
                         break;
+                    case "stat":
+                        Stat(projects);
+                        break;
                     default:
                     {
                         string[] parts = cmd.Split(' ');
@@ -62,74 +65,10 @@ namespace csdean
 
         private static Project[] CollectProjectsInfo(string path)
         {
-            IProjectExtractor extractor;
-            if (File.Exists(path))
-            {
-                extractor = new SolutionExtractor();
-            }
-            else if (Directory.Exists(path))
-            {
-                extractor = new DirectoryExtractor();
-            }
-            else
-            {
-                throw new InvalidOperationException("Path should be SLN or directory");
-            }
-
-
-            var projects = extractor.GetProjects(path).ToArray();
-            Project[] projectsInfo = projects.Select(s => CreateProject(s)).ToArray();
-
-            return projectsInfo;
+            SourceOfProject sourceOfProject = new DefaultSourceOfProject(new ProjectFinderFactory(), new ProjectFactory());
+            return sourceOfProject.GetFrom(path);
         }
 
-        private static Project CreateProject(string projectPath)
-        {
-            using (TextReader reader = new StreamReader(projectPath))
-            {
-                XDocument doc = XDocument.Load(reader, LoadOptions.None);
-
-                if (doc.Root == null) return null;
-                XNamespace ns = doc.Root.Name.Namespace;
-                string id = doc.Root.Descendants(ns + "ProjectGuid").First().Value.ToUpperInvariant();
-                string assemblyName = doc.Root.Descendants(ns + "AssemblyName").First().Value;
-                var project = new Project
-                {
-                    Path = projectPath,
-                    Id = id,
-                    AssemblyName = assemblyName,
-                    Name = Path.GetFileNameWithoutExtension(projectPath),
-                    References = ParseReferences(doc.Root, ns)
-                };
-
-                return project;
-
-            }
-        }
-
-        private static Reference[] ParseReferences(XContainer root, XNamespace ns)
-        {
-            var references = new List<Reference>();
-            foreach (XElement reference in root.Descendants(ns + "Reference"))
-            {
-                XAttribute includeAttribute = reference.Attribute("Include");
-                if (reference.Descendants(ns + "HintPath").Any())
-                {
-                    // library
-                    XElement xElement = reference.Element(ns + "HintPath");
-                    if (xElement != null)
-                    {
-                        references.Add(new LibraryReference(includeAttribute.Value, xElement.Value));
-                    }
-                }
-                else
-                {
-                    references.Add(new StandardReference(includeAttribute.Value));
-                }
-            }
-
-            return references.ToArray();
-        }
 
         private static void Check(Project[] projects)
         {
@@ -162,6 +101,12 @@ namespace csdean
                 }
 
             }
+        }
+
+        private static void Stat(Project[] projects)
+        {
+            Console.WriteLine("Projects:{0}", projects.Length);
+            Console.WriteLine("Edges:{0}", projects.Sum(project => project.References.OfType<ProjectReference>().Count()));
         }
 
         private static void BuildGraph(Project[] projects)

@@ -4,11 +4,11 @@ using System.Linq;
 
 namespace csdean
 {
-    internal class SolutionExtractor : ProjectExtractorBase
+    internal class SolutionFinder : ProjectFinderBase
     {
         private static readonly char[] Separators = {' ', '"'};
 
-        public override IEnumerable<string> GetProjects(string path)
+        public override IEnumerable<string> FindProjects(string path)
         {
             string directoryName = Path.GetDirectoryName(path);
             return directoryName == null 

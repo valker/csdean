@@ -46,16 +46,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DirectoryExtractor.cs" />
-    <Compile Include="IProjectExtractor.cs" />
+    <Compile Include="DefaultSourceOfProject.cs" />
+    <Compile Include="DirectoryFinder.cs" />
+    <Compile Include="IProjectFactory.cs" />
+    <Compile Include="IProjectFinder.cs" />
+    <Compile Include="IProjectFinderFactory.cs" />
     <Compile Include="LibraryReference.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Project.cs" />
-    <Compile Include="ProjectExtractorBase.cs" />
+    <Compile Include="ProjectFactory.cs" />
+    <Compile Include="ProjectFinderBase.cs" />
+    <Compile Include="ProjectFinderFactory.cs" />
     <Compile Include="ProjectReference.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reference.cs" />
-    <Compile Include="SolutionExtractor.cs" />
+    <Compile Include="SolutionFinder.cs" />
+    <Compile Include="SourceOfProject.cs" />
     <Compile Include="StandardReference.cs" />
   </ItemGroup>
   <ItemGroup>

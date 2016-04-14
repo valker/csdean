@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace csdean
 {
-    internal class DirectoryExtractor : ProjectExtractorBase
+    internal class DirectoryFinder : ProjectFinderBase
     {
-        public override IEnumerable<string> GetProjects(string path)
+        public override IEnumerable<string> FindProjects(string path)
         {
             FileInfo[] fileInfos = new DirectoryInfo(path).GetFiles("*.csproj", SearchOption.AllDirectories);
             return fileInfos.Select(fileInfo => fileInfo.FullName);

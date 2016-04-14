@@ -2,9 +2,9 @@ using System.Collections.Generic;
 
 namespace csdean
 {
-    internal abstract class ProjectExtractorBase : IProjectExtractor
+    internal abstract class ProjectFinderBase : IProjectFinder
     {
-//        protected IEnumerable<Project> GetProjects(IEnumerable<FileInfo> fileInfos, string rootDirPath)
+//        protected IEnumerable<Project> FindProjects(IEnumerable<FileInfo> fileInfos, string rootDirPath)
 //        {
 //            var rootDirUri = new Uri(rootDirPath);
 //            return fileInfos.Select(info => CreateProject(info, rootDirUri)).Where(project => project != null);
@@ -29,7 +29,7 @@ namespace csdean
 //                    Id = id,
 //                    AssemblyName = assemblyName,
 //                    Name = projectFileInfo.Name,
-//                    References = DirectoryExtractor.ParseReferences(doc.Root, ns)
+//                    References = DirectoryFinder.ParseReferences(doc.Root, ns)
 //                };
 //
 //                return project;
@@ -77,6 +77,6 @@ namespace csdean
 //            return references.ToArray();
 //        }
 //
-        public abstract IEnumerable<string> GetProjects(string path);
+        public abstract IEnumerable<string> FindProjects(string path);
     }
 }
